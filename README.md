@@ -6,7 +6,7 @@
 |---|---|
 | **프로젝트 코드** | MagicSquare_1004 |
 | **버전** | v0.1 (초안) |
-| **상태** | 설계 · 문서화 완료 · **구현 전** |
+| **상태** | Harness 완료 · **M1 RED 진행 중** |
 | **언어 (계획)** | Python 3.10+ |
 
 ---
@@ -96,14 +96,18 @@
 MagicSquare_xx/
 ├── README.md
 ├── docs/
-│   └── PRD.md                                      # 제품 요구사항 v0.1
+│   ├── PRD.md
+│   └── TDD_RED_TODO.md                             # RED 단계 설계 · To Do (SSOT)
+├── src/{entity,control,boundary}/
+├── tests/{entity,control,boundary}/
 ├── Report/
-│   ├── 01.MagicSquare_ProblemDefinition_Report.md  # 문제 정의 · Mom Test · R-G-I-O
-│   ├── 01. MagicSquare_1004_MomTest_Report.md      # Mom Test STEP 1 인터뷰
-│   └── 03. MagicSquare_1004_Session3_Workbook.md   # 세션 3 · Rule/Command/Test
+│   ├── 01.MagicSquare_ProblemDefinition_Report.md
+│   ├── 02.MagicSquare_Harness_Architecture_Report.md
+│   ├── 03.MagicSquare_TDD_RED_Planning_Report.md
+│   ├── 04.MagicSquare_D_LOC_RED_Skeleton_Report.md
+│   └── 01. MagicSquare_1004_MomTest_Report.md
 └── Prompting/
-    ├── 01. MagicSquare_1004_Export_Transcript.md   # STEP 1 대화 기록
-    └── 02. MagicSquare_1004_Export_Transcript.md   # 후속 세션 대화 기록
+    └── 05. MagicSquare_1004_Export_Transcript.md  # … 01~04 포함
 ```
 
 ---
@@ -114,9 +118,12 @@ MagicSquare_xx/
 |---|---|---|
 | 1 | [Report/01.MagicSquare_ProblemDefinition_Report.md](Report/01.MagicSquare_ProblemDefinition_Report.md) | 문제 정의 · Mom Test · Non-Goals |
 | 2 | [docs/PRD.md](docs/PRD.md) | Rule · API · Test · 마일스톤 |
-| 3 | [Report/03. MagicSquare_1004_Session3_Workbook.md](Report/03.%20MagicSquare_1004_Session3_Workbook.md) | 8계층( Rule → Command → Test Loop ) |
+| 3 | [docs/TDD_RED_TODO.md](docs/TDD_RED_TODO.md) | RED 단계 설계 · Given/Then · 우선순위 |
+| 4 | [Report/02.MagicSquare_Harness_Architecture_Report.md](Report/02.MagicSquare_Harness_Architecture_Report.md) | ECB · Dual-Track · Harness |
+| 5 | [Report/03.MagicSquare_TDD_RED_Planning_Report.md](Report/03.MagicSquare_TDD_RED_Planning_Report.md) | RED 설계 · D-LOC · M1 |
+| 6 | [Report/04.MagicSquare_D_LOC_RED_Skeleton_Report.md](Report/04.MagicSquare_D_LOC_RED_Skeleton_Report.md) | D-LOC-01 RED · pytest |
 | 참고 | [Report/01. MagicSquare_1004_MomTest_Report.md](Report/01.%20MagicSquare_1004_MomTest_Report.md) | 원본 인터뷰 Q&A |
-| 참고 | [Prompting/](Prompting/) | Cursor 대화 Export |
+| 참고 | [Prompting/05. MagicSquare_1004_Export_Transcript.md](Prompting/05.%20MagicSquare_1004_Export_Transcript.md) | D-LOC RED skeleton Export |
 
 ---
 
@@ -163,12 +170,68 @@ python -m magicsquare validate --file grid.txt
 
 ---
 
+## TDD RED 체크리스트
+
+상세 설계(Given · Then · Expected RED Failure): [docs/TDD_RED_TODO.md](docs/TDD_RED_TODO.md)
+
+**규칙:** 한 사이클 = Test ID 1개 · `src/` 변경 금지 · `pytest` **FAIL** = RED 완료
+
+### 공통
+
+- [ ] `pip install -e ".[dev]"` (최초 1회)
+- [ ] RED 시 `src/` 미변경 확인
+- [ ] `pytest.skip` · `xfail` · assert 완화 **금지**
+
+### Boundary (UI Track · `tests/boundary/`)
+
+입력·형식·I/O 차단. entity/control 호출 없음.
+
+- [ ] **U-IN-01** — `grid=None` → `E003` `INVALID_NULL`
+- [ ] **U-IN-02** — `grid=3×4` → `E001` `INVALID_SIZE`
+- [ ] **U-IN-03** — 빈칸 `0`이 2개가 아님 → `E002` `INVALID_BLANKS`
+- [ ] **U-IN-04** — 값이 `0`·`1~16` 밖 → `E004` `INVALID_VALUE`
+- [ ] **U-IN-05** — 파싱 실패 → `E005` `INVALID_FORMAT`
+- [ ] **U-IN-06** — 파일 없음/읽기 실패 → `E006` `IO_ERROR`
+- [ ] **U-OUT-01** — 유효 입력 G1 → `int[6]` 길이 6, 좌표 1-index
+- [ ] Boundary 공통: I/O Mock만 · `pytest tests/boundary/test_u_*.py -q` → FAIL
+
+### Logic (Logic Track · `tests/entity/` · `tests/control/`)
+
+도메인 Rule·Command. **Domain Mock 금지**, 실제 `int[4][4]` fixture만.
+
+**우선순위:** `D-00` 선행 → `D-01` → `D-03` → `D-02` → `D-04` → `D-05`
+
+- [ ] **D-00** — `MagicConstant == 34` (entity, SSOT)
+- [ ] **D-01** — 완성 격자 G1 → `ok: true`, 10축 pass (T01 / SC-2)
+- [ ] **D-03** — 빈칸 2개 → `incomplete`, `ok: false` (T03 / SC-1)
+- [ ] **D-02** — 주대각 `index=0` fail (T02 / **SC-3**)
+- [ ] **D-04** — 1~16 중복 → Rule 02 위반 (T04)
+- [ ] **D-05** — 한 행만 합 ≠ 34 → `row` index fail (T05 / SC-2)
+- [ ] Logic 공통: Domain Mock 없음 · `pytest tests/<layer>/test_d_*.py -q` → FAIL
+
+### Logic — 흐름 (UI Track · boundary, control Mock 허용)
+
+- [ ] **U-FLOW-01** — `grid=None` → `validate_grid()` 0회 호출
+- [ ] **U-FLOW-02** — boundary 오류 → `find_violations()` 0회 호출
+- [ ] 흐름 공통: `pytest tests/boundary/test_u_flow_*.py -q` → FAIL
+
+### Fixture G1 (T01 · `D-01` · `U-OUT-01`)
+
+```text
+[[16, 3,  2, 13],
+ [ 5, 10, 11,  8],
+ [ 9,  6,  7, 12],
+ [ 4, 15, 14,  1]]
+```
+
+---
+
 ## 마일스톤
 
 | 단계 | 산출 | 상태 |
 |---|---|---|
 | **M0** | Problem Definition · PRD · README | ✅ |
-| **M1** | Rule + `validate_grid` + T01~T03 | ⬜ |
+| **M1** | RED (`D-*` · `U-*`) → Rule + `validate_grid` + T01~T03 Green | 🔄 |
 | **M2** | T02 (SC-3) + `find_violations` | ⬜ |
 | **M3** | (선택) CLI · OO 과제 격자 스팟 테스트 | ⬜ |
 
@@ -180,7 +243,7 @@ python -m magicsquare validate --file grid.txt
 |---|---|
 | STEP 1 | **Mom Test** (Rob Fitzpatrick) — 과거 사실 인터뷰 |
 | 세션 3 | **8계층** — Rule → Command → (Skill) → Test Loop |
-| 구현 | TDD — Mom Test SC-1~3 ↔ T01~T05 연결 |
+| 구현 | Dual-Track TDD (RED → GREEN → REFACTOR) — SC-1~3 ↔ T01~T05 · `D-*` / `U-*` |
 
 ---
 
