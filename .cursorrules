@@ -1,0 +1,63 @@
+# MagicSquare_1004 — Cursor Rules (초안)
+
+## 프로젝트
+4×4 **부분 마방진** 조건 판정기. v0.1 범위: Rule · Command · Test Loop. 풀이 생성·UI·자동 채우기는 Out of Scope.
+
+## 도메인 (SSOT)
+- 격자: 4×4, 값 `0`(빈칸) 또는 `1~16` (0 제외 각 1회)
+- 빈칸: **정확히 2개** (`0` == 2)
+- 마방 상수: **34** — `MagicConstant` 단일 정의, `34`/`16` 리터럴 산재 금지
+- 검증 축: 10선 (행4 + 열4 + 주대각1 + 부대각1)
+- 출력: `int[6]` = `[r1, c1, n1, r2, c2, n2]` — 좌표 **1-index** (행·열 모두)
+
+## 오류 코드 (Boundary 소유)
+| 코드 | 담당 |
+|---|---|
+| E001~E007 | **boundary** — 형식·입력·I/O 검증 |
+| E001~E005 | **entity 처리 금지** — entity는 도메인 Rule만, 입력 형식 오류는 boundary에서 차단 |
+| E006~E007 | boundary 전용 (entity/control 위임 전 검출) |
+
+entity는 **MS4_RULE_01~06** (격자·값·합·축·incomplete·위반 보고)만 다룬다.
+
+## 아키텍처 — ECB
+```
+boundary → control → entity
+```
+- **boundary**: CLI·파일·입력 파싱, E001~E007, DTO ↔ domain 변환
+- **control**: use case 오케스트레이션 (`validate_grid`, `find_violations`)
+- **entity**: 순수 도메인 (Grid, Axis, Rule). **외부 계층 import 금지** (`entity → *` 금지)
+
+의존 방향은 항상 바깥→안쪽. 역방향·횡단 import 금지.
+
+## Dual-Track TDD
+| Track | 계층 | Mock |
+|---|---|---|
+| **Logic** | entity, control | **Domain Mock 금지** — 실제 도메인 객체·Rule만 |
+| **UI** | boundary | **Mock 허용** — I/O·CLI·외부 의존 대체 가능 |
+
+테스트 ID·파일명:
+- Logic: `D-*` / `tests/{entity,control}/test_d_*.py`
+- UI: `U-*` / `tests/boundary/test_u_*.py`
+
+## TDD 규칙
+1. **RED → GREEN → REFACTOR** 순서 고수
+2. `assert` 완화·`pytest.skip`·`xfail` **금지** — 실패는 구현으로 해결
+3. 테스트는 PRD Test Loop (T01~T05) 및 SC-1~3와 1:1 추적 가능하게 작성
+4. 한 번에 한 Layer·한 Track만 Green 목표
+
+## AI 행동
+- **한국어**로 응답
+- TDD 작업 시 매 턴 선언: `Phase`(RED/GREEN/REFACTOR) · `Layer`(entity/control/boundary) · `Track`(Logic/UI)
+- Harness·Report·PRD와 충돌 시 **PRD > Report > 코드** 우선
+- **git commit은 사용자 명시 요청 시만** — 자동 커밋·푸시 금지
+- 요청 범위 밖 리팩터·파일 생성·의존성 추가 금지 (최소 diff)
+
+## 디렉터리
+```
+src/{entity,control,boundary}/
+tests/{entity,control,boundary}/
+```
+
+## 참고 문서
+- `docs/PRD.md` — Rule · Command · Test Loop
+- `Report/01.MagicSquare_ProblemDefinition_Report.md` — Mom Test · R-G-I-O
