@@ -105,9 +105,10 @@ MagicSquare_xx/
 │   ├── 02.MagicSquare_Harness_Architecture_Report.md
 │   ├── 03.MagicSquare_TDD_RED_Planning_Report.md
 │   ├── 04.MagicSquare_D_LOC_RED_Skeleton_Report.md
+│   ├── 05.MagicSquare_D_LOC_GREEN_Report.md
 │   └── 01. MagicSquare_1004_MomTest_Report.md
 └── Prompting/
-    └── 05. MagicSquare_1004_Export_Transcript.md  # … 01~04 포함
+    └── 06. MagicSquare_1004_Export_Transcript.md  # … 01~05 포함
 ```
 
 ---
@@ -122,8 +123,9 @@ MagicSquare_xx/
 | 4 | [Report/02.MagicSquare_Harness_Architecture_Report.md](Report/02.MagicSquare_Harness_Architecture_Report.md) | ECB · Dual-Track · Harness |
 | 5 | [Report/03.MagicSquare_TDD_RED_Planning_Report.md](Report/03.MagicSquare_TDD_RED_Planning_Report.md) | RED 설계 · D-LOC · M1 |
 | 6 | [Report/04.MagicSquare_D_LOC_RED_Skeleton_Report.md](Report/04.MagicSquare_D_LOC_RED_Skeleton_Report.md) | D-LOC-01 RED · pytest |
+| 7 | [Report/05.MagicSquare_D_LOC_GREEN_Report.md](Report/05.MagicSquare_D_LOC_GREEN_Report.md) | D-LOC-01 GREEN · find_blank_coords |
 | 참고 | [Report/01. MagicSquare_1004_MomTest_Report.md](Report/01.%20MagicSquare_1004_MomTest_Report.md) | 원본 인터뷰 Q&A |
-| 참고 | [Prompting/05. MagicSquare_1004_Export_Transcript.md](Prompting/05.%20MagicSquare_1004_Export_Transcript.md) | D-LOC RED skeleton Export |
+| 참고 | [Prompting/06. MagicSquare_1004_Export_Transcript.md](Prompting/06.%20MagicSquare_1004_Export_Transcript.md) | D-LOC GREEN Export |
 
 ---
 
